@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Распределяющая шляпа 🎩</title>
+<style>
+  :root{
+    --bg:#0f172a; --card:#111827; --muted:#94a3b8; --accent:#22c55e; --text:#e5e7eb;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial;
+    background: radial-gradient(1200px 700px at 20% -10%, #1f2937, transparent), var(--bg);
+    color:var(--text); display:flex; align-items:center; justify-content:center; min-height:100vh; padding:24px;
+  }
+  .card{
+    width:min(760px, 100%); background:linear-gradient(180deg,#0b1220,#0b1220cc), var(--card);
+    border:1px solid #1f2937; border-radius:20px; padding:24px; box-shadow:0 10px 40px rgba(0,0,0,.35);
+  }
+  h1{margin:0 0 6px 0; font-size:28px}
+  p{margin:8px 0; color:var(--muted); line-height:1.5}
+  .row{display:flex; gap:12px; flex-wrap:wrap; margin-top:12px}
+  input[type="text"]{
+    flex:1; min-width:220px; padding:12px 14px; border-radius:12px; border:1px solid #1f2937; background:#0b1220; color:var(--text);
+  }
+  button{
+    border:0; padding:12px 16px; border-radius:12px; background:var(--accent); color:#062a12; font-weight:700; cursor:pointer;
+    transition:transform .04s ease, filter .2s ease;
+  }
+  button:disabled{opacity:.5; cursor:not-allowed}
+  button:active{transform:translateY(1px)}
+  .muted-btn{background:#1f2937; color:#cbd5e1}
+  .section{margin-top:18px; padding:16px; border:1px dashed #233047; border-radius:14px}
+  .roulette{
+    margin-top:10px; font-size:22px; font-weight:700; min-height:32px; letter-spacing:.2px;
+    padding:10px 12px; background:#0a1323; border:1px solid #1f2937; border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .result{font-size:18px; margin-top:8px}
+  .hat{ width:48px; height:48px; }
+  .hat img{ display:block; width:100%; height:100%; object-fit:contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,.35)); }
+  a{color:#86efac; text-decoration:none}
+  a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="hat">
+      <img src="./hattpng.png" alt="Распределяющая шляпа"
+           width="48" height="48"
+           loading="lazy"
+           onerror="this.replaceWith(document.createTextNode('🎩'))">
+    </div>
+    <h1>Распределяющая шляпа</h1>
+    <p>Представьтесь:</p>
+    <div class="row">
+      <input id="nameInput" type="text" placeholder="Имя" />
+      <button id="startBtn">Начать</button>
+    </div>
+
+    <div id="greet" class="section" style="display:none"></div>
+
+    <div id="dirBlock" class="section" style="display:none">
+      <strong>Выбор направления</strong>
+      <div class="row" style="margin-top:10px">
+        <button id="spinDir">Выбери мою судьбу</button>
+      </div>
+      <div id="dirRoulette" class="roulette"></div>
+      <div id="dirResult" class="result"></div>
+    </div>
+
+    <div id="progBlock" class="section" style="display:none">
+      <strong>Выбор программы</strong>
+      <div class="row" style="margin-top:10px">
+        <button id="spinProg">Крутить программы</button>
+      </div>
+      <div id="progRoulette" class="roulette"></div>
+      <div id="progResult" class="result"></div>
+    </div>
+
+    <div id="tutorAsk" class="section" style="display:none">
+      <strong>Хочешь, я решу за тебя, кто будет твоим научником?</strong>
+      <div class="row" style="margin-top:10px">
+        <button id="yesTutor">Да</button>
+        <button class="muted-btn" id="noTutor">Нет</button>
+      </div>
+    </div>
+
+    <div id="tutorBlock" class="section" style="display:none">
+      <strong>Результат</strong>
+      <div id="tutorRoulette" class="roulette"></div>
+      <div id="tutorResult" class="result"></div>
+    </div>
+  </div>
+
+<script src="./newdictma3.js"
+  onload="document.getElementById('startBtn').disabled=false; console.log('DATA', Object.keys(window.DATA||{}))"
+  onerror="alert('Не нашёл newdictma2.js рядом с index.html')">
+</script>
+
+<script>
+const DATA = window.DATA || {};
+</script>
+
+
+<script>
+
+
+const $ = (id) => document.getElementById(id);
+const nameInput = $("nameInput");
+const startBtn = $("startBtn");
+
+const greet = $("greet");
+const dirBlock = $("dirBlock");
+const dirRoulette = $("dirRoulette");
+const dirResult = $("dirResult");
+const spinDirBtn = $("spinDir");
+
+const progBlock = $("progBlock");
+const progRoulette = $("progRoulette");
+const progResult = $("progResult");
+const spinProgBtn = $("spinProg");
+
+const tutorAsk = $("tutorAsk");
+const yesTutor = $("yesTutor");
+const noTutor = $("noTutor");
+
+const tutorBlock = $("tutorBlock");
+const tutorRoulette = $("tutorRoulette");
+const tutorResult = $("tutorResult");
+
+let chosenDir = null;
+let chosenProg = null;
+
+function greetText(name){
+  return `Привет, ${name}! Понимаю, что очень трудно выбрать магистерскую программу по душе: после политфака всё кажется бессмысленным.
+Я знаю, что тебе нужно! Отдайся судьбе и дай мне решить всё за тебя. Просто нажми на кнопку — и я выберу для тебя направление и программу.`;
+}
+
+
+function spin(list, outEl, durationMs=1700){
+  return new Promise((resolve) => {
+    if (!list || list.length === 0){
+      outEl.textContent = "нет вариантов";
+      return resolve(null);
+    }
+    const target = list[Math.floor(Math.random()*list.length)];
+    const start = performance.now();
+    const tick = () => {
+      const elapsed = performance.now() - start;
+      const t = Math.min(elapsed / durationMs, 1);
+
+      const stepDelay = 30 + t*t*250; 
+      outEl.textContent = list[Math.floor(Math.random()*list.length)];
+      if (elapsed >= durationMs){
+        outEl.textContent = target;
+        resolve(target);
+      } else {
+        setTimeout(tick, stepDelay);
+      }
+    };
+    tick();
+  });
+}
+
+startBtn.addEventListener("click", () => {
+  const name = (nameInput.value || "").trim();
+  const safeName = name || "друг";
+  greet.style.display = "block";
+  greet.innerText = greetText(safeName);
+  dirBlock.style.display = "block";
+  nameInput.disabled = true;
+  startBtn.disabled = true;
+});
+
+
+spinDirBtn.addEventListener("click", async () => {
+  spinDirBtn.disabled = true;
+  dirResult.textContent = "";
+  const dirs = Object.keys(DATA);
+  chosenDir = await spin(dirs, dirRoulette);
+  if (chosenDir){
+    dirResult.textContent = `Твоё направление: ${chosenDir}`;
+
+    progBlock.style.display = "block";
+    spinProgBtn.disabled = false;
+  } else {
+    dirResult.textContent = "Не удалось выбрать направление.";
+  }
+});
+
+
+spinProgBtn.addEventListener("click", async () => {
+  spinProgBtn.disabled = true;
+  progResult.textContent = "";
+  const progs = chosenDir ? Object.keys(DATA[chosenDir] || {}) : [];
+  chosenProg = await spin(progs, progRoulette);
+  if (chosenProg){
+    progResult.textContent = `Твоя программа: ${chosenProg}`;
+
+    tutorAsk.style.display = "block";
+  } else {
+    progResult.textContent = "Не удалось выбрать программу.";
+  }
+});
+
+// Научник — «нет»
+noTutor.addEventListener("click", () => {
+  tutorAsk.style.display = "none";
+  tutorBlock.style.display = "block";
+  tutorRoulette.textContent = "Без научника 🙂";
+  tutorResult.textContent = "В таком случае — успешного поступления!";
+});
+
+// Научник — «да»
+yesTutor.addEventListener("click", async () => {
+  tutorAsk.style.display = "none";
+  tutorBlock.style.display = "block";
+  tutorResult.textContent = "";
+
+  const profMap = (DATA[chosenDir] || {})[chosenProg] || {};
+  const profs = Object.keys(profMap);
+  const picked = await spin(profs, tutorRoulette, 1500);
+
+  if (picked){
+    const link = (profMap[picked] || "").toString();
+    tutorResult.innerHTML = `Твой преподаватель — <strong>${picked}</strong>. 
+      <a href="${link}" target="_blank" rel="noopener noreferrer">Познакомься с ним</a>.`;
+  } else {
+    tutorResult.textContent = "Не получилось выбрать преподавателя.";
+  }
+});
+</script>
+</body>
+</html>
